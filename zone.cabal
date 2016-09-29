@@ -1,0 +1,42 @@
+name: zone
+version: 0.0.1
+license: AllRightsReserved
+author: Mark Hibberd <mark@hibberd.id.au>
+maintainer: Mark Hibberd <mark@hibberd.id.au>
+copyright: (c) 2016 Mark Hibberd
+cabal-version: >= 1.24
+build-type: Simple
+description:
+  Amazon Route53 based zone management cli.
+
+library
+  build-depends:
+      base >= 3 && < 5
+    , amazonka == 1.4.*
+    , amazonka-route53 == 1.4.*
+    , conduit == 1.2.*
+    , lens == 4.*
+    , text >= 1.0 && < 1.3
+
+  ghc-options:
+    -Wall
+
+  hs-source-dirs:
+    src
+
+  exposed-modules:
+    Zone.Data
+    Zone.P
+    Zone.Operation
+
+executable zone
+  default-language: Haskell2010
+  main-is: main/zone.hs
+  build-depends:
+      base >= 3 && < 5
+    , zone
+
+  ghc-options:
+    -Wall
+    -O2
+    -threaded
