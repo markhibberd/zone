@@ -4,6 +4,7 @@ module Zone.Data (
   , Resource (..)
   , Ttl (..)
   , RecordType (..)
+  , Domain (..)
   , RecordSet (..)
   , HostedZone (..)
   ) where
@@ -37,12 +38,19 @@ data RecordType =
   | PTRRecord
   | SRVRecord
   | SPFRecord
-  | NAPTRRecord
   | NSRecord
+    deriving (Eq, Show)
+
+newtype Domain =
+  Domain {
+      domain :: Text
+    } deriving (Eq, Show)
 
 data RecordSet =
   RecordSet {
-      recordSetTtl :: Ttl
+      recordSetName :: Domain
+    , recordSetType :: RecordType
+    , recordSetTtl :: Ttl
     , recordSetResources :: [Resource]
     } deriving (Eq, Show)
 
