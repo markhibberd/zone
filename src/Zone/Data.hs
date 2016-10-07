@@ -1,4 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Zone.Data (
     ZoneName (..)
   , Resource (..)
@@ -7,9 +8,12 @@ module Zone.Data (
   , Domain (..)
   , RecordSet (..)
   , HostedZone (..)
+  , renderRecordType
+  , renderTtl
   ) where
 
 import           Data.Text (Text)
+import qualified Data.Text as T
 
 import           Zone.P
 
@@ -39,7 +43,7 @@ data RecordType =
   | SRVRecord
   | SPFRecord
   | NSRecord
-    deriving (Eq, Show)
+    deriving (Eq, Show, Enum, Bounded)
 
 newtype Domain =
   Domain {
@@ -59,3 +63,29 @@ data HostedZone =
       hostedZoneName :: ZoneName
     , hostedZoneRecords :: [RecordSet]
     }
+
+renderRecordType :: RecordType -> Text
+renderRecordType r =
+  case r of
+    ARecord ->
+      "A"
+    CNAMERecord ->
+      "CNAME"
+    MXRecord ->
+      "MX"
+    AAAARecord ->
+      "AAAA"
+    TXTRecord ->
+      "TXT"
+    PTRRecord ->
+      "PTR"
+    SRVRecord ->
+      "SRV"
+    SPFRecord ->
+      "SPF"
+    NSRecord ->
+      "NS"
+
+renderTtl :: Ttl -> Text
+renderTtl =
+  T.pack . show . ttl

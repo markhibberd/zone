@@ -10,13 +10,17 @@ description:
   Amazon Route53 based zone management cli.
 
 library
+  default-language: Haskell2010
+
   build-depends:
       base >= 3 && < 5
     , amazonka == 1.4.*
     , amazonka-route53 == 1.4.*
+    , attoparsec == 0.13.*
     , conduit == 1.2.*
     , lens == 4.*
     , text >= 1.0 && < 1.3
+    , time >= 1.5 && < 1.7
 
   ghc-options:
     -Wall
@@ -26,8 +30,10 @@ library
 
   exposed-modules:
     Zone.Data
-    Zone.P
     Zone.Operation
+    Zone.P
+    Zone.Serial
+
 
 executable zone
   default-language: Haskell2010
@@ -40,3 +46,18 @@ executable zone
     -Wall
     -O2
     -threaded
+
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: test.hs
+  hs-source-dirs: test
+  build-depends:
+      base >= 3 && < 5
+    , text
+    , zone
+    , QuickCheck >= 2.8.2      && < 2.9
+
+  ghc-options:
+    -Wall
+    -threaded
+    -O2
