@@ -18,8 +18,12 @@ library
     , amazonka-route53 == 1.4.*
     , attoparsec == 0.13.*
     , conduit == 1.2.*
+    , directory == 1.2.*
+    , exceptions == 0.8.*
+    , filepath == 1.4.*
     , lens == 4.*
     , text >= 1.0 && < 1.3
+    , transformers == 0.5.*
     , time >= 1.5 && < 1.7
 
   ghc-options:
@@ -30,6 +34,7 @@ library
 
   exposed-modules:
     Zone.Data
+    Zone.IO
     Zone.Operation
     Zone.P
     Zone.Serial
@@ -40,6 +45,9 @@ executable zone
   main-is: main/zone.hs
   build-depends:
       base >= 3 && < 5
+    , amazonka
+    , optparse-applicative == 0.13.*
+    , text
     , zone
 
   ghc-options:
@@ -48,6 +56,7 @@ executable zone
     -threaded
 
 test-suite test
+  default-language: Haskell2010
   type: exitcode-stdio-1.0
   main-is: test.hs
   hs-source-dirs: test

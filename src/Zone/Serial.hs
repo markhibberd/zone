@@ -1,7 +1,9 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Zone.Serial (
-    toRecord
+    ParseError (..)
+  , parseFile
+  , toRecord
   , fromRecord
   , recordSetParser
   ) where
@@ -13,6 +15,19 @@ import qualified Data.Text as T
 
 import           Zone.Data
 import           Zone.P
+
+data ParseError =
+    ParseError Text Text
+
+parseFile :: Text -> Either ParseError [RecordSet]
+parseFile t =
+  fmap join . for (T.lines t) $ \l ->
+    case "#" `T.isPrefixOf` l of
+      True ->
+        pure []
+      False ->
+        bimap (ParseError l) pure $
+          toRecord l
 
 toRecord :: Text -> Either Text RecordSet
 toRecord t =

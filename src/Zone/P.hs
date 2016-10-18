@@ -7,9 +7,9 @@ import           Control.Applicative as X
 import           Control.Monad as X
 import           Data.Bool as X (Bool (..), (||), (&&), not)
 import           Data.Bifunctor as X (Bifunctor (..))
-import           Data.Either as X (Either (..))
+import           Data.Either as X (Either (..), either)
 import           Data.Foldable as X
-import           Data.Function as X ((.), ($), flip, id)
+import           Data.Function as X ((.), ($), flip, id, const)
 import           Data.Int as X
 import           Data.Maybe as X (Maybe (..), maybe, fromMaybe)
 import           Data.Monoid as X (Monoid (..), (<>))
