@@ -4,12 +4,20 @@ module Zone.Data (
     ZoneName (..)
   , Resource (..)
   , Ttl (..)
-  , RecordType (..)
+  , Priority (..)
+  , Weight (..)
+  , Port (..)
+  , Quoted (..)
+  , Record (..)
   , Domain (..)
   , RecordSet (..)
   , HostedZone (..)
   , renderRecordType
   , renderTtl
+  , renderPriority
+  , renderWeight
+  , renderPort
+  , renderQuoted
   ) where
 
 import           Data.Text (Text)
@@ -33,29 +41,48 @@ newtype Ttl =
       ttl :: Int
     } deriving (Eq, Show, Ord)
 
-data RecordType =
-    ARecord
-  | CNAMERecord
-  | MXRecord
-  | AAAARecord
-  | TXTRecord
-  | PTRRecord
-  | SRVRecord
-  | SPFRecord
-  | NSRecord
-    deriving (Eq, Show, Enum, Bounded)
+newtype Priority =
+  Priority {
+      priority :: Int
+    } deriving (Eq, Show, Ord)
+
+newtype Weight =
+  Weight {
+      weight :: Int
+    } deriving (Eq, Show, Ord)
+
+newtype Port =
+  Port {
+      port :: Int
+    } deriving (Eq, Show, Ord)
+
+newtype Quoted =
+  Quoted {
+      quoted :: Text
+    } deriving (Eq, Show, Ord)
+
+data Record =
+    ARecord Resource
+  | CNAMERecord Resource
+  | MXRecord Priority Resource
+  | AAAARecord Resource
+  | TXTRecord Quoted
+  | PTRRecord Resource
+  | SRVRecord Priority Weight Port Resource
+  | SPFRecord Resource
+  | NSRecord Resource
+    deriving (Eq, Show)
 
 newtype Domain =
   Domain {
       domain :: Text
-    } deriving (Eq, Show)
+    } deriving (Eq, Show, Ord)
 
 data RecordSet =
   RecordSet {
       recordSetName :: Domain
-    , recordSetType :: RecordType
     , recordSetTtl :: Ttl
-    , recordSetResources :: [Resource]
+    , recordSetDetail :: Record
     } deriving (Eq, Show)
 
 data HostedZone =
@@ -64,28 +91,44 @@ data HostedZone =
     , hostedZoneRecords :: [RecordSet]
     }
 
-renderRecordType :: RecordType -> Text
+renderRecordType :: Record -> Text
 renderRecordType r =
   case r of
-    ARecord ->
+    ARecord _ ->
       "A"
-    CNAMERecord ->
+    CNAMERecord _ ->
       "CNAME"
-    MXRecord ->
+    MXRecord _ _ ->
       "MX"
-    AAAARecord ->
+    AAAARecord _ ->
       "AAAA"
-    TXTRecord ->
+    TXTRecord _ ->
       "TXT"
-    PTRRecord ->
+    PTRRecord _ ->
       "PTR"
-    SRVRecord ->
+    SRVRecord _ _ _ _ ->
       "SRV"
-    SPFRecord ->
+    SPFRecord _ ->
       "SPF"
-    NSRecord ->
+    NSRecord _ ->
       "NS"
 
 renderTtl :: Ttl -> Text
 renderTtl =
   T.pack . show . ttl
+
+renderPriority :: Priority -> Text
+renderPriority =
+  T.pack . show . priority
+
+renderWeight :: Weight -> Text
+renderWeight =
+  T.pack . show . weight
+
+renderPort :: Port -> Text
+renderPort =
+  T.pack . show . port
+
+renderQuoted :: Quoted -> Text
+renderQuoted q =
+  mconcat ["\"", quoted q, "\""]

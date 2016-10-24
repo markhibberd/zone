@@ -35,31 +35,80 @@ toRecord t =
 
 fromRecord :: RecordSet -> Text
 fromRecord r =
-  T.intercalate " " [
-      domain . recordSetName $ r
-    , renderRecordType . recordSetType $ r
-    , renderTtl . recordSetTtl $ r
-    , T.intercalate " " . fmap resource . recordSetResources $ r
-    ]
+  case recordSetDetail r of
+    ARecord x ->
+      T.intercalate " " ["A", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, resource x]
+    CNAMERecord x ->
+      T.intercalate " " ["CNAME", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, resource x]
+    MXRecord p x ->
+      T.intercalate " " ["MX", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, renderPriority p, resource x]
+    AAAARecord x ->
+      T.intercalate " " ["AAAA", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, resource x]
+    TXTRecord q ->
+      T.intercalate " " ["TXT", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, renderQuoted q]
+    PTRRecord x ->
+      T.intercalate " " ["PTR", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, resource x]
+    SRVRecord p w t x ->
+      T.intercalate " " ["SRV", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, renderPriority p, renderWeight w, renderPort t, resource x]
+    SPFRecord x ->
+      T.intercalate " " ["SPF", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, resource x]
+    NSRecord x ->
+      T.intercalate " " ["NS", renderTtl . recordSetTtl $ r, domain . recordSetName $ r, resource x]
 
 recordSetParser :: P.Parser RecordSet
 recordSetParser = do
-  d <- Domain <$> P.takeWhile1 (not . isSpace)
-  _ <- P.many1 P.space
-  r <- P.choice [
-      AAAARecord <$ P.string "AAAA"
-    , ARecord <$ P.string "A"
-    , CNAMERecord <$ P.string "CNAME"
-    , MXRecord <$ P.string "MX"
-    , TXTRecord <$ P.string "TXT"
-    , PTRRecord <$ P.string "PTR"
-    , SRVRecord <$ P.string "SRV"
-    , SPFRecord <$ P.string "SPF"
-    , NSRecord <$ P.string "NS"
+  P.choice [
+      recordSetParser' "AAAA" $ AAAARecord <$> tokenize resourceParser
+    , recordSetParser' "A" $ AAAARecord <$> tokenize resourceParser
+    , recordSetParser' "CNAME" $ CNAMERecord <$> tokenize resourceParser
+    , recordSetParser' "MX" $ MXRecord <$> tokenize priorityParser <*> tokenize resourceParser
+    , recordSetParser' "TXT" $ TXTRecord <$> tokenize quotedParser
+    , recordSetParser' "PTR" $ PTRRecord <$> tokenize resourceParser
+    , recordSetParser' "SRV" $ SRVRecord <$> tokenize priorityParser <*> tokenize weightParser <*> tokenize portParser <*> tokenize resourceParser
+    , recordSetParser' "SPF" $ SPFRecord <$> tokenize resourceParser
+    , recordSetParser' "NS" $ NSRecord <$> tokenize resourceParser
     ]
-  _ <- P.many1 P.space
-  t <- Ttl <$> P.decimal
-  _ <- P.many1 P.space
-  rs <- P.sepBy1 (Resource <$> P.takeWhile1 (not . isSpace)) (P.many1 P.space)
-  _ <- many P.space
-  pure $ RecordSet d r t rs
+
+recordSetParser' :: Text -> P.Parser Record -> P.Parser RecordSet
+recordSetParser' x p = do
+  _ <- P.string x
+  t <- tokenize ttlParser
+  d <- tokenize domainParser
+  r <- tokenize p
+  pure $ RecordSet d t r
+
+domainParser :: P.Parser Domain
+domainParser =
+  Domain <$> P.takeWhile1 (not . isSpace)
+
+resourceParser :: P.Parser Resource
+resourceParser =
+  Resource <$> P.takeWhile1 (not . isSpace)
+
+priorityParser :: P.Parser Priority
+priorityParser =
+  Priority <$> P.decimal
+
+weightParser :: P.Parser Weight
+weightParser =
+  Weight <$> P.decimal
+
+portParser :: P.Parser Port
+portParser =
+  Port <$> P.decimal
+
+ttlParser :: P.Parser Ttl
+ttlParser =
+  Ttl <$> P.decimal
+
+quotedParser :: P.Parser Quoted
+quotedParser =
+   quote *> (Quoted <$> P.takeWhile1 (not . (==) '"')) <* quote
+
+quote :: P.Parser ()
+quote =
+  void $ P.string "\""
+
+tokenize :: P.Parser a -> P.Parser a
+tokenize p =
+  P.many1 P.space >> p

@@ -10,6 +10,7 @@ import           Data.Bifunctor as X (Bifunctor (..))
 import           Data.Either as X (Either (..), either)
 import           Data.Foldable as X
 import           Data.Function as X ((.), ($), flip, id, const)
+import           Data.Functor as X ((<$), ($>))
 import           Data.Int as X
 import           Data.Maybe as X (Maybe (..), maybe, fromMaybe)
 import           Data.Monoid as X (Monoid (..), (<>))
