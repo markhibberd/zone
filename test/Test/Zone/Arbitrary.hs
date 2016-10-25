@@ -21,13 +21,39 @@ instance Arbitrary Resource where
     i <- choose (1 :: Int, 99)
     pure . Resource . mconcat $ ["127.0.0.", T.pack . show $ i]
 
+instance Arbitrary Quoted where
+  arbitrary =
+    Quoted <$> elements ["kermit", "gonzo", "statler", "waldorf"]
+
 instance Arbitrary Ttl where
   arbitrary =
     Ttl <$> choose (60, 3600)
 
-instance Arbitrary RecordType where
+instance Arbitrary Priority where
   arbitrary =
-    elements [minBound .. maxBound]
+    Priority <$> elements [10, 20, 30, 40, 50, 60, 70, 80, 90]
+
+instance Arbitrary Weight where
+  arbitrary =
+    Weight <$> elements [1..100]
+
+instance Arbitrary Port where
+  arbitrary =
+    Port <$> choose (1000, 10000)
+
+instance Arbitrary Record where
+  arbitrary =
+    oneof [
+        ARecord <$> arbitrary
+      , CNAMERecord <$> arbitrary
+      , MXRecord <$> arbitrary <*> arbitrary
+      , AAAARecord <$> arbitrary
+      , TXTRecord <$> arbitrary
+      , PTRRecord <$> arbitrary
+      , SRVRecord <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+      , SPFRecord <$> arbitrary
+      , NSRecord <$> arbitrary
+      ]
 
 instance Arbitrary Domain where
   arbitrary = do
@@ -41,4 +67,3 @@ instance Arbitrary RecordSet where
       <$> arbitrary
       <*> arbitrary
       <*> arbitrary
-      <*> (choose (1, 5) >>= flip vectorOf arbitrary)

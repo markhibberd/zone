@@ -45,7 +45,7 @@ main = do
   hSetBuffering stderr LineBuffering
   dispatch zone >>= \cmd -> case cmd of
     ApplyCommand f -> do
-      runExceptT (Z.load f) >>= \e -> case e of
+      runExceptT (Z.load f) >>= \ff -> case ff of
         Left err -> do
           T.hPutStrLn stderr . mconcat $ case err of
             Z.FilenameExtensionError x ->

@@ -6,6 +6,15 @@ module Zone.Serial (
   , toRecord
   , fromRecord
   , recordSetParser
+  , recordSetParser'
+  , domainParser
+  , resourceParser
+  , priorityParser
+  , weightParser
+  , portParser
+  , ttlParser
+  , quotedParser
+  , tokenize
   ) where
 
 import qualified Data.Attoparsec.Text as P
@@ -59,7 +68,7 @@ recordSetParser :: P.Parser RecordSet
 recordSetParser = do
   P.choice [
       recordSetParser' "AAAA" $ AAAARecord <$> tokenize resourceParser
-    , recordSetParser' "A" $ AAAARecord <$> tokenize resourceParser
+    , recordSetParser' "A" $ ARecord <$> tokenize resourceParser
     , recordSetParser' "CNAME" $ CNAMERecord <$> tokenize resourceParser
     , recordSetParser' "MX" $ MXRecord <$> tokenize priorityParser <*> tokenize resourceParser
     , recordSetParser' "TXT" $ TXTRecord <$> tokenize quotedParser
@@ -74,7 +83,7 @@ recordSetParser' x p = do
   _ <- P.string x
   t <- tokenize ttlParser
   d <- tokenize domainParser
-  r <- tokenize p
+  r <- p
   pure $ RecordSet d t r
 
 domainParser :: P.Parser Domain
