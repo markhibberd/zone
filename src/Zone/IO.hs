@@ -32,13 +32,13 @@ load f =
     ext = F.takeExtension base
     name = F.dropExtension base
   in
-    case ext == "zone" of
+    case ext == ".zone" of
       False ->
         throwE $ FilenameExtensionError f
       True -> do
         e <- liftIO $
           D.doesFileExist f
-        when e $
+        unless e $
           throwE $ FileNotFound f
         txt <- liftIO $
           T.readFile f

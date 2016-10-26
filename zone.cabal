@@ -48,6 +48,7 @@ executable zone
     , amazonka
     , optparse-applicative == 0.13.*
     , text
+    , transformers
     , zone
 
   ghc-options:
@@ -62,6 +63,7 @@ test-suite test
   hs-source-dirs: test
   build-depends:
       base >= 3 && < 5
+    , attoparsec
     , text
     , zone
     , QuickCheck >= 2.8.2      && < 2.9
